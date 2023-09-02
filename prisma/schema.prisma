@@ -4,22 +4,24 @@ datasource db {
 }
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
+// ------------------- AUTH -------------------
+
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String   
-  refresh_token      String?  @db.String()
-  access_token       String?  @db.String()
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.String()
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String()
+  access_token      String? @db.String()
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String()
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -35,17 +37,21 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  username      String?   @unique
-  email         String?   @unique
+  username      String?       @unique
+  email         String?       @unique
   emailVerified DateTime?
-  password_hash      String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  password_hash String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   image         String?
   accounts      Account[]
   sessions      Session[]
+  dreams        Dream[]
+  comments      Comment[]
+  dreamLikes    DreamLike[]
+  commentLikes  CommentLike[]
 }
 
 model VerificationToken {
@@ -54,4 +60,68 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ------------------- APP LOGIC -------------------
+
+model Dream {
+  id          String      @id @default(cuid())
+  title       String
+  image       String?
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  tags        Tag[]
+  comments    Comment[]
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  likes       DreamLike[]
+}
+
+model DreamLike {
+  userId  String
+  dreamId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dream   Dream  @relation(fields: [dreamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, dreamId])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dreams    Dream[]
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  text      String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  dream     Dream         @relation(fields: [dreamId], references: [id], onDelete: Cascade)
+  dreamId   String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  likes     CommentLike[]
+}
+
+model CommentLike {
+  userId    String
+  commentId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dreams    Dream[]
 }

@@ -2,14 +2,13 @@
 import createCache from '@emotion/cache'
 import { useServerInsertedHTML } from 'next/navigation'
 import { CacheProvider } from '@emotion/react'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
+import { CssVarsProvider } from '@mui/joy/styles'
+import CssBaseline from '@mui/joy/CssBaseline'
 import { useState } from 'react'
-import { darkTheme } from './themes'
 
 // This implementation is from emotion-js
 // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1319747902
-export default function ThemeRegistry(props) {
+export default function ThemeRegistry(props: any) {
     const { options, children } = props
 
     const [{ cache, flush }] = useState(() => {
@@ -54,10 +53,12 @@ export default function ThemeRegistry(props) {
 
     return (
         <CacheProvider value={cache}>
-            <ThemeProvider theme={darkTheme}>
+            <CssVarsProvider defaultColorScheme={'dark'}>
+                {/* theme={darkTheme} ^ */}
+                {/* the custom theme is optional */}
                 <CssBaseline />
                 {children}
-            </ThemeProvider>
+            </CssVarsProvider>
         </CacheProvider>
     )
 }

@@ -1,4 +1,4 @@
-import { Avatar, Button, Stack } from '@mui/material'
+import { Avatar, Button, Stack } from '@mui/joy'
 import { useSession } from 'next-auth/react'
 import React from 'react'
 
@@ -27,12 +27,28 @@ export default function AuthSectionHeader() {
             component="section"
             direction={'row'}
             spacing={2}
-            sx={{ p: 2, ml: 'auto' }}
+            // sx={{ ml: 'auto' }}
         >
-            <Button variant="contained" color="primary">
+            <Button
+                sx={{
+                    fontSize: '1rem',
+                    // fontWeight: 'bold',
+                }}
+                variant="outlined"
+                size="md"
+                color="primary"
+            >
                 Login
             </Button>
-            <Button variant="contained" color="secondary">
+            <Button
+                sx={{
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                }}
+                variant="solid"
+                size="md"
+                color="primary"
+            >
                 Sign Up
             </Button>
         </Stack>

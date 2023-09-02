@@ -1,7 +1,12 @@
-import { createTheme } from '@mui/material/styles'
+import { extendTheme } from '@mui/joy/styles'
 
-export const darkTheme = createTheme({
-    palette: {
-        mode: 'dark',
+export const darkTheme = extendTheme({
+    colorSchemes: {
+        light: {
+            palette: {},
+        },
+        dark: {
+            palette: {},
+        },
     },
 })

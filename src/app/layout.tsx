@@ -2,21 +2,15 @@ import './styles/globals.css'
 import type { Metadata } from 'next'
 import { Inter, Roboto } from 'next/font/google'
 import Header from './components/layout/Header/Header'
-import { CssBaseline } from '@mui/material'
+import localFont from 'next/font/local'
 import AuthSessionProvider from './providers/providers'
 import ThemeRegistry from './theme/ThemeRegistry'
-
-const inter = Inter({ subsets: ['latin'] })
-
-const roboto = Roboto({
-    subsets: ['latin'],
-    weight: ['100', '300', '400', '500', '700', '900'],
-    display: 'swap',
-})
+import { inter, roboto } from './fonts'
 
 export const metadata: Metadata = {
     title: 'Dreamz',
     description: 'Your dreams are everything',
+    viewport: 'width=device-width, initial-scale=1',
 }
 
 export default function RootLayout({
@@ -28,7 +22,7 @@ export default function RootLayout({
         <AuthSessionProvider>
             <ThemeRegistry options={{ key: 'mui' }}>
                 <html lang="en">
-                    <body className={roboto.className}>
+                    <body className={`${inter.className}`}>
                         <Header />
                         {children}
                     </body>
