@@ -42,16 +42,18 @@ model User {
   username      String?       @unique
   email         String?       @unique
   emailVerified DateTime?
+  verifyToken   String?
   password_hash String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   image         String?
   accounts      Account[]
   sessions      Session[]
-  dreams        Dream[]
   comments      Comment[]
-  dreamLikes    DreamLike[]
+  likes         Like[]
   commentLikes  CommentLike[]
+  dreams        Dream[]
+  dreamons      Dreamon[]
 }
 
 model VerificationToken {
@@ -64,29 +66,59 @@ model VerificationToken {
 
 // ------------------- APP LOGIC -------------------
 
-model Dream {
-  id          String      @id @default(cuid())
-  title       String
-  image       String?
-  description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  tags        Tag[]
-  comments    Comment[]
-  categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  likes       DreamLike[]
+model Entity {
+  entityId   String     @id @default(cuid())
+  type       String
+  entityType EntityType @relation(fields: [type], references: [typeName])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  dreams     Dream[]
+  dreamons   Dreamon[]
+  likes      Like[]
+  comments   Comment[]
+  tags       Tag[]
 }
 
-model DreamLike {
-  userId  String
-  dreamId String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dream   Dream  @relation(fields: [dreamId], references: [id], onDelete: Cascade)
+model EntityType {
+  typeName String   @id
+  entities Entity[]
+}
 
-  @@id([userId, dreamId])
+model Dream {
+  entity     Entity        @relation(fields: [id], references: [entityId], onDelete: Cascade)
+  id         String        @unique
+  name       String
+  story      String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  categoryId String
+  category   DreamCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model Dreamon {
+  entity      Entity          @relation(fields: [id], references: [entityId], onDelete: Cascade)
+  id          String          @unique
+  name        String
+  image       String?
+  description String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  categoryId  String
+  category    DreamonCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+// TODO: change to Like
+model Like {
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityId String
+  entity   Entity @relation(fields: [entityId], references: [entityId], onDelete: Cascade)
+
+  @@id([userId, entityId])
 }
 
 model Tag {
@@ -94,18 +126,21 @@ model Tag {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  dreams    Dream[]
+  entity    Entity[]
 }
 
 model Comment {
   id        String        @id @default(cuid())
-  text      String
+  content   String
+  entityId  String
+  entity    Entity        @relation(fields: [entityId], references: [entityId], onDelete: Cascade)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  dream     Dream         @relation(fields: [dreamId], references: [id], onDelete: Cascade)
-  dreamId   String
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
+  parentId  String?
+  parent    Comment?      @relation("CommentToParent", fields: [parentId], references: [id])
+  children  Comment[]     @relation("CommentToParent")
   likes     CommentLike[]
 }
 
@@ -118,10 +153,14 @@ model CommentLike {
   @@id([userId, commentId])
 }
 
-model Category {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  dreams    Dream[]
+model DreamCategory {
+  id     String  @id @default(cuid())
+  name   String
+  dreams Dream[]
+}
+
+model DreamonCategory {
+  id       String    @id @default(cuid())
+  name     String
+  dreamons Dreamon[]
 }

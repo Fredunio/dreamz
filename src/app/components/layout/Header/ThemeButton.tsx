@@ -1,3 +1,5 @@
+'use client'
+
 import IconButton from '@mui/joy/IconButton'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useColorScheme } from '@mui/joy'
@@ -25,11 +27,17 @@ function ThemeButton() {
             }}
             variant="plain"
             onClick={() => {
-                setMode(mode === 'light' ? 'dark' : 'light')
+                console.log('mode', mode)
+                setMode(mode === 'dark' ? 'light' : 'dark')
             }}
         >
-            {/* <DarkModeIcon /> */}
-            {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+            {mode === 'light' ? (
+                <span className="text-2xl">🕶️</span>
+            ) : (
+                // <DarkModeIcon />
+                <span className="text-2xl">💡</span>
+            )}
+            {/* <LightModeIcon /> */}
         </IconButton>
     )
 }

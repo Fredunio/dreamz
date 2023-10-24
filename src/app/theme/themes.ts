@@ -1,12 +1,28 @@
 import { extendTheme } from '@mui/joy/styles'
 
-export const darkTheme = extendTheme({
-    colorSchemes: {
-        light: {
-            palette: {},
+export const appTheme = extendTheme({
+    components: {
+        JoyStack: {
+            defaultProps: {
+                useFlexGap: true,
+            },
         },
-        dark: {
-            palette: {},
+        JoyFormLabel: {
+            defaultProps: {
+                sx: {
+                    fontWeight: 'bold',
+                },
+            },
         },
+
     },
+    // colorSchemes: {
+    //     light: {
+    //         palette: {},
+    //     },
+    //     dark: {
+    //         palette: {},
+    //     },
+    // },
 })
+

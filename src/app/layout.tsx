@@ -1,11 +1,10 @@
 import './styles/globals.css'
 import type { Metadata } from 'next'
-import { Inter, Roboto } from 'next/font/google'
 import Header from './components/layout/Header/Header'
-import localFont from 'next/font/local'
-import AuthSessionProvider from './providers/providers'
+import SessionProvider from './providers/providers'
 import ThemeRegistry from './theme/ThemeRegistry'
-import { inter, roboto } from './fonts'
+import { inter } from './fonts'
+import { getServerSession } from 'next-auth'
 
 export const metadata: Metadata = {
     title: 'Dreamz',
@@ -13,21 +12,27 @@ export const metadata: Metadata = {
     viewport: 'width=device-width, initial-scale=1',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const session = await getServerSession()
+
     return (
-        <AuthSessionProvider>
-            <ThemeRegistry options={{ key: 'mui' }}>
+        <SessionProvider session={session}>
+            <ThemeRegistry options={{ key: 'joy' }}>
+                {/* TODO: get this to work */}
+                {/* {getInitColorSchemeScript({
+                    defaultMode: 'dark',
+                })} */}
                 <html lang="en">
-                    <body className={`${inter.className}`}>
+                    <body className={`${inter.className} min-h-screen`}>
                         <Header />
                         {children}
                     </body>
                 </html>
             </ThemeRegistry>
-        </AuthSessionProvider>
+        </SessionProvider>
     )
 }

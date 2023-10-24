@@ -5,6 +5,8 @@ import { CacheProvider } from '@emotion/react'
 import { CssVarsProvider } from '@mui/joy/styles'
 import CssBaseline from '@mui/joy/CssBaseline'
 import { useState } from 'react'
+import { getInitColorSchemeScript } from '@mui/material'
+import { appTheme } from './themes'
 
 // This implementation is from emotion-js
 // https://github.com/emotion-js/emotion/issues/2928#issuecomment-1319747902
@@ -52,13 +54,16 @@ export default function ThemeRegistry(props: any) {
     })
 
     return (
-        <CacheProvider value={cache}>
-            <CssVarsProvider defaultColorScheme={'dark'}>
-                {/* theme={darkTheme} ^ */}
-                {/* the custom theme is optional */}
-                <CssBaseline />
-                {children}
-            </CssVarsProvider>
-        </CacheProvider>
+        <>
+            <CacheProvider value={cache}>
+                <CssVarsProvider theme={appTheme} defaultMode="dark">
+                    {/* theme={darkTheme} ^ */}
+                    {/* the custom theme is optional */}
+
+                    <CssBaseline />
+                    {children}
+                </CssVarsProvider>
+            </CacheProvider>
+        </>
     )
 }
