@@ -25,6 +25,7 @@ import GithubLoginButton from '../buttons/GithubLoginButton'
 import { useEffect, useRef } from 'react'
 // import { hashPassword } from '@/app/lib/passwordFunctions'
 import { signIn } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const schema = yup.object().shape({
     email: yup.string().email().required('Please enter a valid email'),
@@ -34,7 +35,7 @@ const schema = yup.object().shape({
 
 type FormData = yup.InferType<typeof schema>
 
-export default function SignUpForm() {
+export default function SignInForm() {
     const form = useForm<FormData>({
         defaultValues: {
             email: '',
@@ -43,9 +44,29 @@ export default function SignUpForm() {
         resolver: yupResolver(schema),
     })
 
+    const searchParams = useSearchParams()
+    const router = useRouter()
+
     const { register, handleSubmit, watch, formState } = form
     const onSubmit = async (data: FormData) => {
-        console.log(data)
+        const loginResponse = await signIn('credentials', {
+            email: data.email,
+            password: data.password,
+            redirect: false,
+        })
+
+        if (loginResponse?.error) {
+            console.log(loginResponse.error)
+        }
+
+        console.log(loginResponse)
+        const redirectTo = searchParams.get('redirectTo')
+
+        if (redirectTo) {
+            router.push(redirectTo)
+        }
+
+        // router.push('/')
     }
 
     const didMountRef = useRef(false)
@@ -77,7 +98,7 @@ export default function SignUpForm() {
                 Sign In
             </Typography>
             <FormControl
-                error={!!formState.errors.email}
+                error={Boolean(formState.errors.email)}
                 sx={{
                     width: '100%',
                 }}
@@ -98,7 +119,7 @@ export default function SignUpForm() {
             </FormControl>
 
             <FormControl
-                error={!!formState.errors.password}
+                error={Boolean(formState.errors.password)}
                 sx={{
                     width: '100%',
                 }}

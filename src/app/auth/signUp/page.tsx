@@ -1,5 +1,6 @@
 import { Stack, Typography } from '@mui/joy'
-import SignUpForm from '@/app/components/forms/SignUpForm'
+import SignUpForm from '../../components/forms/SignUpForm'
+import * as React from 'react'
 
 export default function SignUpPage() {
     return (
@@ -15,7 +16,6 @@ export default function SignUpPage() {
                 placeContent: 'center',
             }}
         >
-            <Typography level="h1">Sign Up</Typography>
             <SignUpForm />
         </Stack>
     )

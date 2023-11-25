@@ -1,4 +1,5 @@
 import { Stack, Typography, styled } from '@mui/joy'
+import * as React from 'react'
 
 export default function FormLayout({
     children,
@@ -22,14 +23,26 @@ export default function FormLayout({
             </Typography>
 
             <Stack
+                px={{
+                    xs: 2,
+                    sm: 4,
+                    md: 0,
+                }}
                 spacing={6}
                 width={{
                     // xs: '15rem',
-                    // sm: '20rem',
-                    md: '30rem',
-                    lg: '40rem',
+                    sm: '100%',
+                    md: '40rem',
+                    lg: '60rem',
                     // xl: '35rem',
                 }}
+                // bgcolor={{
+                //     xs: 'red',
+                //     sm: 'green',
+                //     md: 'blue',
+                //     lg: 'yellow',
+                //     xl: 'pink',
+                // }}
                 direction={'column'}
             >
                 {children}

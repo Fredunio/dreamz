@@ -3,21 +3,10 @@
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail'
 import KeyIcon from '@mui/icons-material/Key'
 
-import {
-    Button,
-    Divider,
-    FormControl,
-    FormHelperText,
-    FormLabel,
-    Input,
-    Sheet,
-    Stack,
-    Typography,
-} from '@mui/joy'
-import React, { useRef, useState } from 'react'
-import GoogleLoginButton from '@/app/components/buttons/GoogleLoginButton'
-import FacebookLoginButton from '@/app/components/buttons/FacebookLoginButton'
-import SignInForm from '@/app/components/forms/SignInForm'
+import { Stack } from '@mui/joy'
+import { useRef, useState } from 'react'
+import SignInForm from '../../components/forms/SignInForm'
+import * as React from 'react'
 
 export default function SignInPage() {
     return (
@@ -33,7 +22,7 @@ export default function SignInPage() {
                 placeContent: 'center',
             }}
         >
-            <Typography level="h1">Sign In</Typography>
+            {/* <Typography level="h1">Sign In</Typography> */}
             <SignInForm />
         </Stack>
     )

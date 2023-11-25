@@ -25,6 +25,9 @@ import GithubLoginButton from '../buttons/GithubLoginButton'
 import { useEffect, useRef } from 'react'
 // import { hashPassword } from '@/app/lib/passwordFunctions'
 import { signIn } from 'next-auth/react'
+import axios from 'axios'
+import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 const schema = yup.object().shape({
     email: yup.string().email().required('Please enter a valid email'),
@@ -56,11 +59,27 @@ export default function SignUpForm() {
     })
 
     const { register, handleSubmit, watch, formState } = form
+    const router = useRouter()
     const onSubmit = async (data: FormData) => {
-        console.log(data)
-        // const { email, password } = data
-        // const hashedPassword = await hashPassword(password)
+        const { email, password } = data
+        try {
+            const response = await axios.post('/api/auth/signUp', {
+                email,
+                password,
+            })
+
+            if (response.status === 200) {
+                toast.success('Account created successfully')
+            } else {
+                toast.error(response.data.message)
+            }
+
+            router.push('/auth/signIn')
+        } catch (err: any) {
+            toast.error(err.message)
+        }
     }
+
     const pw = watch('password')
 
     const didMountRef = useRef(false)

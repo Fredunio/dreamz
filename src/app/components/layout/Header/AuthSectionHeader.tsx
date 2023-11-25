@@ -7,15 +7,53 @@ import {
     Menu,
     MenuButton,
     MenuItem,
-    Skeleton,
     Stack,
 } from '@mui/joy'
-import { signOut, useSession } from 'next-auth/react'
-import LoginModal from './LoginModal'
-import { useState } from 'react'
-import SignUpModal from './SignUpModal'
+import { signOut } from 'next-auth/react'
 import { Session } from 'next-auth'
-import { on } from 'events'
+import * as React from 'react'
+
+function AuthButtons() {
+    // {
+    //   onLoginClick,
+    //   onSignUpClick,
+    // }: {
+    //   onLoginClick: () => void
+    //   onSignUpClick: () => void
+    // }
+    return (
+        <Stack component="section" direction={'row'} spacing={2}>
+            <Button
+                component={'a'}
+                href={'/auth/signIn'}
+                sx={{
+                    fontSize: '1rem',
+                }}
+                variant="outlined"
+                size="md"
+                color="primary"
+                // onClick={onLoginClick}
+            >
+                Login
+            </Button>
+
+            <Button
+                component={'a'}
+                href={'/auth/signUp'}
+                sx={{
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                }}
+                variant="solid"
+                size="md"
+                color="primary"
+                // onClick={onSignUpClick}
+            >
+                Sign Up
+            </Button>
+        </Stack>
+    )
+}
 
 function UserAvatar({ src, name }: { src?: string; name?: string }) {
     return (
@@ -37,7 +75,9 @@ function AvatarButton({ session }: { session: Session }) {
                 />
             </MenuButton>
             <Menu>
-                <MenuItem>Profile</MenuItem>
+                <MenuItem href="/dashboard" component="a">
+                    Profile
+                </MenuItem>
                 <MenuItem>Settings</MenuItem>
                 <MenuItem
                     onClick={() => {
@@ -51,50 +91,14 @@ function AvatarButton({ session }: { session: Session }) {
     )
 }
 
-function AuthButtons({
-    onLoginClick,
-    onSignUpClick,
-}: {
-    onLoginClick: () => void
-    onSignUpClick: () => void
-}) {
-    return (
-        <Stack component="section" direction={'row'} spacing={2}>
-            <Button
-                sx={{
-                    fontSize: '1rem',
-                }}
-                variant="outlined"
-                size="md"
-                color="primary"
-                onClick={onLoginClick}
-            >
-                Login
-            </Button>
-
-            <Button
-                sx={{
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                }}
-                variant="solid"
-                size="md"
-                color="primary"
-                onClick={onSignUpClick}
-            >
-                Sign Up
-            </Button>
-        </Stack>
-    )
-}
-
 export default function AuthSectionHeader({
     session,
 }: {
     session: Session | null
 }) {
-    const [loginModalOpen, setLoginModalOpen] = useState(false)
-    const [signUpModalOpen, setSignUpModalOpen] = useState(false)
+    // IDK if modals are necessary
+    // const [loginModalOpen, setLoginModalOpen] = useState(false)
+    // const [signUpModalOpen, setSignUpModalOpen] = useState(false)
 
     return (
         <>
@@ -102,13 +106,13 @@ export default function AuthSectionHeader({
                 <AvatarButton session={session} />
             ) : (
                 <AuthButtons
-                    onLoginClick={() => setLoginModalOpen(true)}
-                    onSignUpClick={() => setSignUpModalOpen(true)}
+                // onLoginClick={() => setLoginModalOpen(true)}
+                // onSignUpClick={() => setSignUpModalOpen(true)}
                 />
             )}
 
-            <LoginModal open={loginModalOpen} setOpen={setLoginModalOpen} />
-            <SignUpModal open={signUpModalOpen} setOpen={setSignUpModalOpen} />
+            {/*<LoginModal open={loginModalOpen} setOpen={setLoginModalOpen} />*/}
+            {/*<SignUpModal open={signUpModalOpen} setOpen={setSignUpModalOpen} />*/}
         </>
     )
 }

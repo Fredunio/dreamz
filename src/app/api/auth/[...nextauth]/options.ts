@@ -3,21 +3,41 @@ import GitHubProvider from 'next-auth/providers/github'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
 import CredentialsProvider from 'next-auth/providers/credentials'
-// import { PrismaAdapter } from '@auth/prisma-adapter'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { PrismaClient } from '@prisma/client'
-import { prisma } from '@/app/lib/prisma'
-import crypto from 'crypto'
-import { verifyPassword } from '@/app/lib/passwordFunctions'
+import { verifyPassword } from '../../../lib/passwordFunctions'
+import { prisma } from '../../../lib/clients/prisma'
+import { JWT } from 'next-auth/jwt'
 
 export const options: NextAuthOptions = {
-    // pages: {
-    //     signIn: '/auth/signIn',
-    //     signOut: '/auth/signOut',
-    //     // error: '/auth/error', // Error code passed in query string as ?error=
-    //     // newUser: '/auth/newuser', // If set, new users will be directed here on first sign in
-    // },
+    pages: {
+        signIn: '/auth/signIn',
+        // signOut: '/auth/signOut',
+        // error: '/auth/error', // Error code passed in query string as ?error=
+        // newUser: '/auth/newuser', // If set, new users will be directed here on first sign in
+    },
+
     adapter: PrismaAdapter(prisma),
+    callbacks: {
+        // token.sub is the id of the user
+        async jwt({ account, token, user, profile, session, trigger }) {
+            return {
+                ...token,
+                userId: token.sub,
+            }
+        },
+
+        // async session(params) {
+        //     console.log('params', params)
+        //     return {
+        //         expires: params.session.expires,
+        //         user: {
+        //             ...params.session.user,
+        //             // id: params.token.userId,
+        //             // testAccount: params.token.account || 'testFailed',
+        //         },
+        //     }
+        // },
+    },
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -52,24 +72,13 @@ export const options: NextAuthOptions = {
                     },
                 })
 
-                if (!user) return null
-
-                if (!user.password_hash) return null
+                if (!user || !user.password_hash) return null
 
                 const isVeryfied = verifyPassword(password, user.password_hash)
 
                 if (!isVeryfied) return null
 
                 return user
-                // check if user exists, and password hash matches
-
-                // if (
-                //     user.password === credentials.password &&
-                //     user.name === credentials.username
-                // ) {
-                //     return user
-                // }
-                return null
             },
         }),
     ],

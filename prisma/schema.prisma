@@ -1,6 +1,7 @@
 datasource db {
-  provider = "cockroachdb"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -10,17 +11,17 @@ generator client {
 // ------------------- AUTH -------------------
 
 model Account {
-  id                String  @id @default(cuid())
+  id                String  @id @default(uuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.String()
-  access_token      String? @db.String()
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.String()
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -29,7 +30,7 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -37,23 +38,24 @@ model Session {
 }
 
 model User {
-  id            String        @id @default(cuid())
-  name          String?
-  username      String?       @unique
-  email         String?       @unique
-  emailVerified DateTime?
-  verifyToken   String?
-  password_hash String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  comments      Comment[]
-  likes         Like[]
-  commentLikes  CommentLike[]
-  dreams        Dream[]
-  dreamons      Dreamon[]
+  id               String        @id @default(uuid())
+  name             String?
+  // TODO: probably remove username
+  username         String?       @unique
+  email            String?       @unique
+  emailVerified    DateTime?
+  verifyEmailToken String?
+  password_hash    String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  image            String?
+  accounts         Account[]
+  sessions         Session[]
+  comments         Comment[]
+  likes            Like[]
+  commentLikes     CommentLike[]
+  dreams           Dream[]
+  dreamons         Dreamon[]
 }
 
 model VerificationToken {
@@ -67,16 +69,16 @@ model VerificationToken {
 // ------------------- APP LOGIC -------------------
 
 model Entity {
-  entityId   String     @id @default(cuid())
+  entityId   String        @id @default(uuid())
   type       String
-  entityType EntityType @relation(fields: [type], references: [typeName])
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  entityType EntityType    @relation(fields: [type], references: [typeName])
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   dreams     Dream[]
   dreamons   Dreamon[]
   likes      Like[]
   comments   Comment[]
-  tags       Tag[]
+  tags       EntityToTag[]
 }
 
 model EntityType {
@@ -85,21 +87,43 @@ model EntityType {
 }
 
 model Dream {
-  entity     Entity        @relation(fields: [id], references: [entityId], onDelete: Cascade)
-  id         String        @unique
-  name       String
-  story      String
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  categoryId String
-  category   DreamCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  id              String           @id @unique
+  entity          Entity           @relation(fields: [id], references: [entityId], onDelete: Cascade)
+  name            String
+  story           String
+  image           String?
+  date            DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  categoryId      Int
+  category        DreamCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isPrivate       Boolean          @default(false)
+  disableComments Boolean          @default(false)
+  disableLikes    Boolean          @default(false)
+  emotions        EmotionToDream[]
+}
+
+model Emotion {
+  id     Int              @id @default(autoincrement())
+  name   String           @unique
+  emoji  String
+  dreams EmotionToDream[]
+}
+
+model EmotionToDream {
+  emotionId Int
+  dreamId   String
+  emotion   Emotion @relation(fields: [emotionId], references: [id])
+  dream     Dream   @relation(fields: [dreamId], references: [id])
+
+  @@id([emotionId, dreamId])
 }
 
 model Dreamon {
   entity      Entity          @relation(fields: [id], references: [entityId], onDelete: Cascade)
-  id          String          @unique
+  id          String          @id @unique
   name        String
   image       String?
   description String
@@ -107,11 +131,10 @@ model Dreamon {
   updatedAt   DateTime        @updatedAt
   user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  categoryId  String
+  categoryId  Int
   category    DreamonCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
 
-// TODO: change to Like
 model Like {
   userId   String
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -121,17 +144,26 @@ model Like {
   @@id([userId, entityId])
 }
 
+// TODO: remove additional fields, fix primary key no serial, fix updatedAt
 model Tag {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  entity    Entity[]
+  name      String        @id @unique @db.VarChar(20)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+  entities  EntityToTag[]
+}
+
+model EntityToTag {
+  entityId String
+  tagName  String
+  entity   Entity @relation(fields: [entityId], references: [entityId], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagName], references: [name], onDelete: Cascade)
+
+  @@id([entityId, tagName])
 }
 
 model Comment {
-  id        String        @id @default(cuid())
-  content   String
+  id        String        @id @default(uuid())
+  content   String        @db.VarChar(500)
   entityId  String
   entity    Entity        @relation(fields: [entityId], references: [entityId], onDelete: Cascade)
   createdAt DateTime      @default(now())
@@ -154,13 +186,13 @@ model CommentLike {
 }
 
 model DreamCategory {
-  id     String  @id @default(cuid())
-  name   String
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
   dreams Dream[]
 }
 
 model DreamonCategory {
-  id       String    @id @default(cuid())
-  name     String
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
   dreamons Dreamon[]
 }

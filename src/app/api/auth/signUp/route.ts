@@ -1,5 +1,5 @@
 import { hashPassword } from '@/app/lib/passwordFunctions'
-import { prisma } from '@/app/lib/prisma'
+import { prisma } from '@/app/lib/clients/prisma'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
                 {
                     user: null,
                     message: 'User with this email adress already exists',
+                    redirect: '/auth/signIn',
                 },
                 {
                     status: 404,
@@ -41,6 +42,8 @@ export async function POST(request: Request) {
             data: {
                 email,
                 password_hash: passwordHash,
+                //  TODO: uncomment this line when you have set up email verification
+                emailVerified: new Date(),
             },
         })
 
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
             }
         )
     } catch (e) {
-        return new Response('Error', {
+        return new Response('Something went wrong!', {
             status: 404,
         })
     }

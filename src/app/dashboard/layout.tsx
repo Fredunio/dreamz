@@ -13,7 +13,11 @@ import { KeyboardArrowRight } from '@mui/icons-material'
 import PersonIcon from '@mui/icons-material/Person'
 import DashboardNav from './DashboardNav'
 
-export default function DashboardLayout() {
+export default function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
     return (
         <Stack
             justifyContent={'center'}
@@ -28,33 +32,35 @@ export default function DashboardLayout() {
                 lg: 20,
             }}
         >
-            <Grid container sx={{ flexGrow: 1 }}>
-                <Grid xs={12}>
-                    <Sheet variant="outlined" sx={{ p: 4 }}>
-                        <Typography level="h1" component={'h1'}>
-                            Dashboard
-                        </Typography>
-                    </Sheet>
-                </Grid>
+            <Stack
+                direction={'column'}
+                alignItems={'stretch'}
+                sx={{ width: '100%' }}
+            >
+                <Sheet
+                    variant="plain"
+                    sx={{ p: 4, backgroundColor: 'transparent' }}
+                >
+                    <Typography level="h1" component={'h1'}>
+                        Dashboard
+                    </Typography>
+                </Sheet>
 
-                <DashboardNav />
-
-                <Grid xs={9}>
-                    <Sheet
-                        variant="outlined"
-                        sx={{ p: 4, borderTop: 'none', height: '100%' }}
-                    >
-                        <h2>Content</h2>
-                        <p>
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Suscipit unde non hic, magni magnam in
-                            temporibus tenetur cum animi libero at nam expedita
-                            commodi consequatur accusantium necessitatibus
-                            provident corrupti ratione?
-                        </p>
-                    </Sheet>
+                <Grid
+                    mt={4}
+                    columnGap={4}
+                    width={'100%'}
+                    container
+                    sx={{ flexGrow: 1, position: 'relative' }}
+                >
+                    <DashboardNav />
+                    <Grid xs>
+                        <Sheet variant="plain" sx={{ height: '100%' }}>
+                            {children}
+                        </Sheet>
+                    </Grid>
                 </Grid>
-            </Grid>
+            </Stack>
         </Stack>
     )
 }

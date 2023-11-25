@@ -1,9 +1,11 @@
 import AuthSectionHeader from './AuthSectionHeader'
-import { Sheet, Stack, Typography, getInitColorSchemeScript } from '@mui/joy'
+import { Divider, Sheet, Stack, Typography } from '@mui/joy'
 import Link from 'next/link'
 import ThemeButton from './ThemeButton'
 import { getServerSession } from 'next-auth'
-import { options } from '@/app/api/auth/[...nextauth]/options'
+import AddMenuHeader from './AddMenuHeader'
+import * as React from 'react'
+import { options } from '../../../api/auth/[...nextauth]/options'
 
 const pages = ['Products', 'Pricing', 'Blog']
 const profileItems = ['Profile', 'Settings', 'Logout']
@@ -42,9 +44,27 @@ export default async function Header() {
                 >
                     Dreamz
                 </Typography>
-                <Stack component="section" direction={'row'} spacing={4}>
+                <Stack
+                    component="section"
+                    alignItems={'stretch'}
+                    direction={'row'}
+                    spacing={2}
+                    alignContent={'stretch'}
+                >
                     <ThemeButton />
                     <AuthSectionHeader session={session} />
+
+                    {session && (
+                        <>
+                            <Divider
+                                orientation="vertical"
+                                sx={{
+                                    marginRight: 4,
+                                }}
+                            />
+                            <AddMenuHeader />
+                        </>
+                    )}
                 </Stack>
             </Sheet>
         </>
