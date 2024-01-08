@@ -1,5 +1,9 @@
 import axios from 'axios'
-import { TDreamInput, TEmotionInput, TTagInput } from '../../../types/types'
+import {
+    TDreamInput,
+    TEmotionInput,
+    TDreamTagInput,
+} from '../../../types/types'
 
 // {
 //     dreamInput,
@@ -7,17 +11,14 @@ import { TDreamInput, TEmotionInput, TTagInput } from '../../../types/types'
 //     emotions,
 // }: {
 //     dreamInput: TDreamInput
-//     tags?: TTagInput[]
+//     tags?: TDreamTagInput[]
 //     emotions?: TEmotionInput[]
 // }
-export async function postDreamEntity(form: FormData) {
+export async function postDream(form: FormData) {
     await axios
         .post<
             {
                 form: FormData
-                // dreamInput: TDreamInput
-                // tags?: TTagInput[]
-                // emotions?: TEmotionInput[]
             },
             void
         >('/api/dreams/add_dream', form, {

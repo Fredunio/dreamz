@@ -1,25 +1,20 @@
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { prisma } from '../clients/prisma'
 
-export async function deleteDreamEntity(
-    entityId: string,
+export async function deleteDream(
+    dreamId: string,
     imageName: string | undefined,
     S3Client: S3Client
 ) {
     try {
-        if (entityId.length > 0) {
+        if (dreamId.length > 0) {
             // Cascades
-            await prisma.entity.delete({
+
+            await prisma.dream.delete({
                 where: {
-                    entityId,
+                    id: dreamId,
                 },
             })
-
-            // await prisma.dream.delete({
-            //     where: {
-            //         id: entityId,
-            //     },
-            // })
         }
     } catch (e) {
         throw new Error(e as any)

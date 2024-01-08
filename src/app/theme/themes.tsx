@@ -1,4 +1,6 @@
+import { ArrowDropDown } from '@mui/icons-material'
 import { extendTheme } from '@mui/joy/styles'
+import React from 'react'
 
 export const appTheme = extendTheme({
     components: {
@@ -15,6 +17,11 @@ export const appTheme = extendTheme({
             },
         },
 
+        JoySelect: {
+            defaultProps: {
+                indicator: <ArrowDropDown />,
+            },
+        },
     },
     // colorSchemes: {
     //     light: {
@@ -25,4 +32,3 @@ export const appTheme = extendTheme({
     //     },
     // },
 })
-

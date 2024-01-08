@@ -1,9 +1,9 @@
-import { TTagInput } from '../../types/types'
+import { TDreamTagInput } from '../../types/types'
 import { prisma } from '../clients/prisma'
 
-export function createTags(tagNames: TTagInput[]) {
+export function createTags(tagNames: TDreamTagInput[]) {
     try {
-        const payload = prisma.tag.createMany({
+        const payload = prisma.dreamTag.createMany({
             data: tagNames.map((name) => {
                 return {
                     name,
@@ -12,6 +12,6 @@ export function createTags(tagNames: TTagInput[]) {
             skipDuplicates: true,
         })
     } catch (e) {
-        throw new Error(e)
+        throw new Error(e as any)
     }
 }

@@ -6,10 +6,11 @@ export default function DashboardSectionHeader({
     subtitle,
 }: {
     title: string
-    subtitle: string
+    subtitle?: string
 }) {
     return (
         <Sheet
+            color="primary"
             variant="outlined"
             sx={{
                 p: 4,
@@ -18,21 +19,24 @@ export default function DashboardSectionHeader({
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '1rem',
+                backgroundColor: 'transparent',
             }}
         >
             <Typography level="h2" component={'h2'}>
                 {title}
             </Typography>
 
-            <Typography
-                level="body-md"
-                component={'p'}
-                sx={{
-                    color: 'text.secondary',
-                }}
-            >
-                {subtitle}
-            </Typography>
+            {subtitle && (
+                <Typography
+                    level="body-md"
+                    component={'p'}
+                    sx={{
+                        color: 'text.secondary',
+                    }}
+                >
+                    {subtitle}
+                </Typography>
+            )}
         </Sheet>
     )
 }

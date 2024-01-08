@@ -20,12 +20,12 @@ import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import { InfoOutlined } from '@mui/icons-material'
-import { passwordMeter } from '@/app/lib/passwordMeter'
 import GithubLoginButton from '../buttons/GithubLoginButton'
 import { useEffect, useRef } from 'react'
-// import { hashPassword } from '@/app/lib/passwordFunctions'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import React from 'react'
+import toast from 'react-hot-toast'
 
 const schema = yup.object().shape({
     email: yup.string().email().required('Please enter a valid email'),
@@ -48,18 +48,19 @@ export default function SignInForm() {
     const router = useRouter()
 
     const { register, handleSubmit, watch, formState } = form
-    const onSubmit = async (data: FormData) => {
-        const loginResponse = await signIn('credentials', {
+    const onCredentialsSubmit = async (data: FormData) => {
+        const loginPromise = signIn('credentials', {
             email: data.email,
             password: data.password,
             redirect: false,
         })
 
-        if (loginResponse?.error) {
-            console.log(loginResponse.error)
-        }
+        toast.promise(loginPromise, {
+            loading: 'Logging in',
+            success: 'Login successful',
+            error: 'Login failed',
+        })
 
-        console.log(loginResponse)
         const redirectTo = searchParams.get('redirectTo')
 
         if (redirectTo) {
@@ -69,13 +70,25 @@ export default function SignInForm() {
         // router.push('/')
     }
 
+    const onGoogleSignIn = async () => {
+        const loginPromise = signIn('google', {
+            callbackUrl: '/',
+        })
+
+        toast.promise(loginPromise, {
+            loading: 'Logging in',
+            success: 'Login successful',
+            error: 'Login failed',
+        })
+    }
+
     const didMountRef = useRef(false)
     useEffect(() => {
         didMountRef.current = true
     })
     return (
         <Sheet
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(onCredentialsSubmit)}
             component="form"
             sx={{
                 display: 'flex',
@@ -89,7 +102,9 @@ export default function SignInForm() {
                 py: 6,
                 gap: 2,
                 borderRadius: 5,
-                // backgroundColor: 'inherit',
+                backgroundColor: 'inherit',
+                border: 0,
+                // borderColor: 'Highlight',
             }}
             variant="outlined"
             color="neutral"
@@ -153,11 +168,7 @@ export default function SignInForm() {
                 </Chip>
             </Divider>
             <Stack direction={'row'} spacing={2} width={'100%'}>
-                <GoogleLoginButton
-                    onClick={() => {
-                        signIn('google')
-                    }}
-                />
+                <GoogleLoginButton onClick={onGoogleSignIn} />
                 <FacebookLoginButton
                     onClick={() => {
                         signIn('facebook')

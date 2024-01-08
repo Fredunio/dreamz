@@ -1,3 +1,4 @@
+import React from 'react'
 import {
     Grid,
     List,
@@ -12,6 +13,7 @@ import {
 import { KeyboardArrowRight } from '@mui/icons-material'
 import PersonIcon from '@mui/icons-material/Person'
 import DashboardNav from './DashboardNav'
+import HomeIcon from '@mui/icons-material/Home'
 
 export default function DashboardLayout({
     children,
@@ -23,6 +25,8 @@ export default function DashboardLayout({
             justifyContent={'center'}
             alignItems={'center'}
             direction={'column'}
+            mx={'auto'}
+            maxWidth={'var(--max-page-width)'}
             py={{
                 md: 5,
                 lg: 10,
@@ -42,6 +46,7 @@ export default function DashboardLayout({
                     sx={{ p: 4, backgroundColor: 'transparent' }}
                 >
                     <Typography level="h1" component={'h1'}>
+                        {/* <HomeIcon sx={{ mr: 2 }} /> */}
                         Dashboard
                     </Typography>
                 </Sheet>
@@ -55,7 +60,13 @@ export default function DashboardLayout({
                 >
                     <DashboardNav />
                     <Grid xs>
-                        <Sheet variant="plain" sx={{ height: '100%' }}>
+                        <Sheet
+                            //  variant="plain"
+                            sx={{
+                                height: '100%',
+                                backgroundColor: 'transparent',
+                            }}
+                        >
                             {children}
                         </Sheet>
                     </Grid>

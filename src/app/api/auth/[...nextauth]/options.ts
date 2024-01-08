@@ -6,9 +6,12 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { verifyPassword } from '../../../lib/passwordFunctions'
 import { prisma } from '../../../lib/clients/prisma'
-import { JWT } from 'next-auth/jwt'
 
-export const options: NextAuthOptions = {
+if (!process.env.NEXTAUTH_SECRET) {
+    throw new Error('NEXTAUTH_SECRET must be set')
+}
+
+export const authOptions: NextAuthOptions = {
     pages: {
         signIn: '/auth/signIn',
         // signOut: '/auth/signOut',
@@ -20,23 +23,14 @@ export const options: NextAuthOptions = {
     callbacks: {
         // token.sub is the id of the user
         async jwt({ account, token, user, profile, session, trigger }) {
-            return {
-                ...token,
-                userId: token.sub,
-            }
+            return token
         },
 
-        // async session(params) {
-        //     console.log('params', params)
-        //     return {
-        //         expires: params.session.expires,
-        //         user: {
-        //             ...params.session.user,
-        //             // id: params.token.userId,
-        //             // testAccount: params.token.account || 'testFailed',
-        //         },
-        //     }
-        // },
+        async session({ session, token, user }) {
+            // user only if session strategy is set to database
+            session.user.id = token.sub
+            return session
+        },
     },
     providers: [
         GoogleProvider({
@@ -85,6 +79,6 @@ export const options: NextAuthOptions = {
     session: {
         strategy: 'jwt',
     },
-    secret: process.env.NEXTAUTH_SECET,
+    secret: process.env.NEXTAUTH_SECRET,
     debug: process.env.NODE_ENV === 'development',
 }

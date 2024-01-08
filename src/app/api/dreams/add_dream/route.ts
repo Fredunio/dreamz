@@ -1,12 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { prisma } from '../../../lib/clients/prisma'
-import { deleteDreamEntity } from '../../../lib/db/deleteDreamEntity'
+import { deleteDream } from '../../../lib/db/deleteDreamEntity'
 import { getToken } from 'next-auth/jwt'
-import { TDreamInput, TEmotionInput, TTagInput } from '../../../types/types'
-import { deleteDreamImageFromStorage } from '../../../lib/storage/deleteDreamImageFromStorage'
-import { readFile } from 'fs/promises'
+import { TDreamInput } from '../../../types/types'
+import { deleteFileFromStorage } from '../../../lib/storage/deleteFileFromStorage'
 import { generateImageName } from '../../../lib/generateImageName'
+import { S3ClientDreamz } from '../../../lib/clients/s3'
 
 export async function POST(request: NextRequest) {
     const token = await getToken({
@@ -20,25 +20,14 @@ export async function POST(request: NextRequest) {
         })
     }
 
-    if (
-        !process.env.S3_REGION ||
-        !process.env.S3_ACCESS_KEY_ID ||
-        !process.env.S3_SECRET_ACCESS_KEY ||
-        !process.env.S3_BUCKET_NAME_DREAM
-    ) {
-        throw new Error('Create Dream: S3 variables not set!')
+    if (!process.env.S3_BUCKET_NAME_DREAM) {
+        throw new Error('Create Dream: S3 bucket name missing!')
     }
 
-    const storageS3 = new S3Client({
-        region: process.env.S3_REGION,
-        credentials: {
-            accessKeyId: process.env.S3_ACCESS_KEY_ID,
-            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-        },
-    })
+    const storageS3 = S3ClientDreamz
 
     const userId = token.userId as string
-    let newEntityId = ''
+    let newDreamId = ''
     let imageName = undefined
 
     try {
@@ -48,12 +37,8 @@ export async function POST(request: NextRequest) {
             form.get('dreamInput') as string
         ) as TDreamInput
         const imageFile = form.get('image') as File
-        const tagsArr = form.getAll('tags') as string[]
-        const emotionsIdArr = form.getAll('emotions') as string[]
-
-        console.log('api dreamInput', dreamInput)
-        console.log('api tags', tagsArr)
-        console.log('api emotions', emotionsIdArr)
+        const tagsArr = form.getAll('tags[]') as string[]
+        const emotionsIdArr = form.getAll('emotions[]') as string[]
 
         // Prepare the tags for the Prisma query
         const tagCreateArray = tagsArr?.map((tagInput: string) => ({
@@ -65,32 +50,13 @@ export async function POST(request: NextRequest) {
             },
         }))
 
-        // Create the entity
-        const newEntity = await prisma.entity.create({
-            data: {
-                tags: {
-                    create: tagCreateArray,
-                },
-                entityType: {
-                    connect: {
-                        typeName: 'dream',
-                    },
-                },
-            },
-        })
-
-        // Store the ID of the created entity
-        newEntityId = newEntity.entityId
-
         // Prepare the  emotions for the Prisma query
 
         const emotionConnectArray = emotionsIdArr?.map((emotionId) => ({
-            emotionId_dreamId: {
-                dreamId: newEntityId,
-                emotionId: Number(emotionId),
+            emotion: {
+                connect: { id: Number(emotionId) },
             },
         }))
-
         // upload image to s3 bucket
 
         if (imageFile) {
@@ -113,21 +79,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // console.log('api tagCreateArray', tagCreateArray)
-        // console.log('api emotionConnectArray', emotionConnectArray)
-        // console.log('api newEntityId', newEntityId)
-        // console.log('api imageName', imageName)
-        // console.log('api userId', userId)
-        // console.log(
-        //     'Number(dreamInput.categoryId)',
-        //     Number(dreamInput.categoryId)
-        // )
-
         const { categoryId, ...dream } = dreamInput
         // Create the dream entity
         await prisma.dream.create({
             data: {
                 ...dream,
+                tags: {
+                    create: tagCreateArray,
+                },
                 category: {
                     connect: {
                         id: Number(dreamInput.categoryId),
@@ -140,28 +99,31 @@ export async function POST(request: NextRequest) {
                     },
                 },
                 // id: newEntityId,
-                entity: {
-                    connect: {
-                        entityId: newEntityId,
-                    },
-                },
 
-                image: imageName,
+                imageName: imageName,
 
                 emotions: {
-                    connect: emotionConnectArray,
+                    // connect: emotionConnectArray,
+                    create: emotionConnectArray,
                 },
             },
         })
-    } catch (e) {
-        console.log('Error creating dream entity', e)
 
-        if (newEntityId) {
-            await deleteDreamEntity(newEntityId, imageName, storageS3)
+        return NextResponse.json(
+            {
+                message: 'Dream added!',
+            },
+            {
+                status: 200,
+            }
+        )
+    } catch (e) {
+        if (newDreamId) {
+            await deleteDream(newDreamId, imageName, storageS3)
         }
 
         if (imageName) {
-            await deleteDreamImageFromStorage(
+            await deleteFileFromStorage(
                 imageName,
                 process.env.S3_BUCKET_NAME_DREAM,
                 storageS3
@@ -172,13 +134,4 @@ export async function POST(request: NextRequest) {
             status: 404,
         })
     }
-
-    return NextResponse.json(
-        {
-            message: 'Dream added!',
-        },
-        {
-            status: 200,
-        }
-    )
 }

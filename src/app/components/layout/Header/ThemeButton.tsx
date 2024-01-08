@@ -27,7 +27,6 @@ function ThemeButton() {
             }}
             variant="plain"
             onClick={() => {
-                console.log('mode', mode)
                 setMode(mode === 'dark' ? 'light' : 'dark')
             }}
         >

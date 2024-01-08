@@ -1,7 +1,7 @@
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
-export async function deleteDreamImageFromStorage(
-    imageName: string,
+export async function deleteFileFromStorage(
+    fileame: string,
     bucketName: string,
     S3Client: S3Client
 ) {
@@ -9,7 +9,7 @@ export async function deleteDreamImageFromStorage(
         await S3Client.send(
             new DeleteObjectCommand({
                 Bucket: bucketName,
-                Key: imageName,
+                Key: fileame,
             })
         )
     } catch (e) {

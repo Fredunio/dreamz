@@ -5,16 +5,9 @@ export async function GET(request: Request) {
     try {
         const emotions = await prisma.emotion.findMany()
 
-        // Convert bigints to strings - otherwise they can't be serialized
-        const parsedEmotions = emotions.map((emotion) => {
-            return {
-                ...emotion,
-                id: emotion.id.toString(),
-            }
-        })
         return NextResponse.json(
             {
-                emotions: parsedEmotions,
+                emotions: emotions,
                 message: 'Emotions fetched successfully',
             },
             {

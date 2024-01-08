@@ -14,9 +14,15 @@ export default function ImagePreview({
     onRemove?: () => void
     containerClassName?: string
 }) {
-    console.log('src', src)
+    const imageSrc = React.useMemo(() => {
+        if (!src) {
+            return null
+        }
 
-    if (!src) {
+        return src
+    }, [src])
+
+    if (!imageSrc) {
         return null
     }
 
@@ -24,7 +30,12 @@ export default function ImagePreview({
         <div
             className={`h-[18rem] overflow-hidden w-full group rounded-lg  relative ${containerClassName}`}
         >
-            <Image src={src} alt={alt} className="object-cover" fill={true} />
+            <Image
+                src={imageSrc}
+                alt={alt || 'Preview'}
+                className="object-cover"
+                fill={true}
+            />
             {onRemove && (
                 <IconButton
                     onClick={onRemove}

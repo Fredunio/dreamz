@@ -6,15 +6,15 @@ export async function GET(request: Request) {
         const categories = await prisma.dreamCategory.findMany()
 
         // Convert bigints to strings - otherwise they can't be serialized
-        const parsedCategories = categories.map((category) => {
-            return {
-                ...category,
-                id: category.id.toString(),
-            }
-        })
+        // const parsedCategories = categories.map((category) => {
+        //     return {
+        //         ...category,
+        //         id: category.id.toString(),
+        //     }
+        // })
         return NextResponse.json(
             {
-                categories: parsedCategories,
+                categories: categories,
                 message: 'Categories fetched successfully',
             },
             {

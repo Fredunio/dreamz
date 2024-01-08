@@ -1,6 +1,7 @@
 import { Button, IconButton, Input, Sheet, Stack } from '@mui/joy'
 import { Box, Container, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
+import React from 'react'
 
 export default function HomePage() {
     return (
@@ -34,11 +35,11 @@ export default function HomePage() {
                     placeholder="Search..."
                     sx={{
                         minWidth: {
-                            xs: '100%',
-                            sm: '100%',
-                            md: '100%',
-                            lg: '25rem',
-                            xl: '30rem',
+                            // xs: '100%',
+                            // sm: '100%',
+                            // md: '100%',
+                            lg: '30rem',
+                            xl: '40rem',
                         },
                         '--Input-paddingInline': '21px',
                         '--Input-radius': '50px',

@@ -5,5 +5,10 @@
 :root {
   --header-height: 4rem;
   --header-height-mobile: 3rem;
+  --max-page-width: 95rem;
 }
 
+.page-container {
+  max-width: var(--max-page-width);
+  margin: 0 auto;
+}

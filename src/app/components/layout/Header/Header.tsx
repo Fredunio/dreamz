@@ -5,7 +5,8 @@ import ThemeButton from './ThemeButton'
 import { getServerSession } from 'next-auth'
 import AddMenuHeader from './AddMenuHeader'
 import * as React from 'react'
-import { options } from '../../../api/auth/[...nextauth]/options'
+import { authOptions } from '../../../api/auth/[...nextauth]/options'
+import Image from 'next/image'
 
 const pages = ['Products', 'Pricing', 'Blog']
 const profileItems = ['Profile', 'Settings', 'Logout']
@@ -13,7 +14,7 @@ const navItems = ['Home', 'About', 'Contact']
 const drawerWidth = 240
 
 export default async function Header() {
-    const session = await getServerSession(options)
+    const session = await getServerSession(authOptions)
     return (
         <>
             <Sheet
@@ -31,13 +32,20 @@ export default async function Header() {
                     zIndex: 3,
                     bgcolor: 'background.default',
                     borderBottom: 1,
-                    borderColor: 'divider',
+                    // borderColor: 'divider',
+                    borderColor: 'Highlight',
                     boxShadow: 4,
                     height: 'var(--header-height)',
                 }}
             >
+                {/* <Image
+                    src="assets/logo.svg"
+                    alt="Dreamz Logo"
+                    width={150}
+                    height={150}
+                /> */}
                 <Typography
-                    level="h4"
+                    level="h3"
                     prefetch={false}
                     href={'/'}
                     component={Link}

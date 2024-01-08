@@ -9,7 +9,7 @@ export default function FieldErrorMessage({ error }: { error?: string }) {
         <Typography
             level="body-md"
             sx={{
-                color: 'red',
+                color: 'danger.plainColor',
                 mt: 1,
             }}
         >

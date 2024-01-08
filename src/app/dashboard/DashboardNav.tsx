@@ -17,6 +17,7 @@ import Face3Icon from '@mui/icons-material/Face3'
 import SettingsIcon from '@mui/icons-material/Settings'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import { usePathname } from 'next/navigation'
+import React from 'react'
 
 const navLinks = [
     {
@@ -72,35 +73,27 @@ export default function DashboardNav() {
                 }}
             >
                 {navLinks.map((link) => (
-                    <>
-                        <ListItem
-                            href={link.href}
-                            component={'a'}
-                            key={link.name}
+                    <ListItem href={link.href} component={'a'} key={link.name}>
+                        <ListItemButton
+                            variant="outlined"
+                            color="primary"
+                            selected={pathname === link.href}
+                            sx={{
+                                borderRadius: '8px',
+                                maxHeight: '2rem',
+                            }}
                         >
-                            <ListItemButton
-                                variant="outlined"
-                                color="neutral"
-                                selected={pathname === link.href}
+                            <ListItemDecorator>{link.icon}</ListItemDecorator>
+                            <ListItemContent
                                 sx={{
-                                    borderRadius: '8px',
-                                    maxHeight: '2rem',
+                                    fontWeight: 'bold',
                                 }}
                             >
-                                <ListItemDecorator>
-                                    {link.icon}
-                                </ListItemDecorator>
-                                <ListItemContent
-                                    sx={{
-                                        fontWeight: 'bold',
-                                    }}
-                                >
-                                    {link.name}
-                                </ListItemContent>
-                                <KeyboardArrowRight />
-                            </ListItemButton>
-                        </ListItem>
-                    </>
+                                {link.name}
+                            </ListItemContent>
+                            <KeyboardArrowRight />
+                        </ListItemButton>
+                    </ListItem>
                 ))}
             </List>
         </Grid>

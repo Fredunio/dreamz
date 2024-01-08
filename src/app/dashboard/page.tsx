@@ -1,5 +1,8 @@
+// 'use client'
+import { redirect, useRouter } from 'next/navigation'
 import React from 'react'
 
 export default function Dashboard() {
-    return <div>page</div>
+    // const router = useRouter()
+    redirect('/dashboard/profile')
 }

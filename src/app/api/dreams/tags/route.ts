@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '../../lib/clients/prisma'
+import { prisma } from '../../../lib/clients/prisma'
 
 export async function GET(request: Request) {
     try {
-        const tags = await prisma.tag.findMany()
+        const tags = await prisma.dreamTag.findMany()
 
         return NextResponse.json(
             {
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
             }
         )
     } catch (e) {
-        return new Response('Something went wrong!', {
+        return new Response('Failed to fetch dream tags', {
             status: 404,
         })
     }

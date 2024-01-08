@@ -2,14 +2,17 @@
 
 import {
     Autocomplete,
+    AutocompleteOption,
     Button,
     Checkbox,
     Chip,
     FormHelperText,
     FormLabel,
     Input,
+    ListItemContent,
     Option,
     Select,
+    Skeleton,
     Stack,
     SvgIcon,
 } from '@mui/joy'
@@ -28,8 +31,9 @@ import { getEmotions } from '../lib/fetchers/getEmotions'
 import ImagePreview from '../components/formElements/ImagePreview'
 import * as React from 'react'
 import FieldErrorMessage from '../components/formElements/FieldErrorMessage'
-import { postDreamEntity } from '../lib/fetchers/dreams/postDreamEntity'
+import { postDream } from '../lib/fetchers/dreams/postDream'
 import toast from 'react-hot-toast'
+import { truthyFilter } from '../lib/truthyFilter'
 
 // TODO: implement saving form data to session storage
 
@@ -41,8 +45,16 @@ const schema = yup
         date: yup.date().nullable().defined(),
         categoryId: yup.number().required('Category is required'),
         emotions: yup.array().of(yup.number().required()).defined(),
-        story: yup.string().required('Story is required'),
-        image: yup.mixed(),
+        story: yup
+            .string()
+            .required('Hey, you forgot to add your dream story!'),
+        // check if image works
+        image: yup
+            .mixed((input): input is FileList => input instanceof FileList)
+            .test('fileSize', 'The file is too large', (value) => {
+                return value && value[0].size <= 2000000
+            })
+            .nullable(),
         inputTag: yup.string(),
         tags: yup.array().of(yup.string().required()).defined(),
         isPrivate: yup.boolean().required(),
@@ -50,6 +62,8 @@ const schema = yup
         disableLikes: yup.boolean().required(),
     })
     .required()
+
+const initialEditorValue = '<p>This is the initial content of the editor</p>'
 
 export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
     const {
@@ -61,13 +75,14 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
         formState: { errors, isSubmitting, isLoading, isValidating },
     } = useForm({
         resolver: yupResolver(schema),
+        reValidateMode: 'onBlur',
         defaultValues: {
             name: '',
             date: new Date(),
             categoryId: undefined,
             emotions: [],
-            story: '',
-            image: '',
+            story: initialEditorValue,
+            image: null,
             inputTag: '',
             tags: [],
             isPrivate: false,
@@ -88,7 +103,7 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
 
     const dreamMutation = useMutation({
         mutationKey: ['create_dream'],
-        mutationFn: postDreamEntity,
+        mutationFn: postDream,
 
         onMutate() {
             const loadingToastId = toast.loading('Adding dream...')
@@ -97,12 +112,10 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
         onError: (error: any, variables, context) => {
             toast.remove(context?.loadingToastId)
             toast.error('Something went wrong!')
-            console.log('mutation error: ', error)
         },
         onSuccess: (data, variables, context) => {
             toast.remove(context?.loadingToastId)
             toast.success('Dream added successfully!')
-            console.log('mutation success: ', data)
         },
     })
 
@@ -145,8 +158,9 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
         const { emotions, tags, inputTag, image, ...dreamInput } = data
 
         const formData = new FormData()
-
-        formData.append('image', image[0])
+        if (image && image[0]) {
+            formData.append('image', image[0])
+        }
 
         tags.forEach((tag) => {
             formData.append(`tags[]`, tag)
@@ -224,10 +238,15 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                 >
                     <FormLabel>Category</FormLabel>
                     <Select
-                        {...register('categoryId')}
+                        // {...register('categoryId')}
                         variant="outlined"
                         color="primary"
                         placeholder="Select category..."
+                        onChange={(e, newValue) => {
+                            if (typeof newValue === 'number') {
+                                setValue('categoryId', newValue)
+                            }
+                        }}
                     >
                         {categoriesData?.categories.map((category) => (
                             <Option
@@ -249,6 +268,15 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                     variant="outlined"
                     multiple
                     id="emotions"
+                    onChange={(e, newValue) => {
+                        if (!newValue) {
+                            return
+                        }
+                        setValue(
+                            'emotions',
+                            newValue.map((item) => item.id)
+                        )
+                    }}
                     placeholder="Emotions"
                     options={emotionsData?.emotions || []}
                     getOptionLabel={(option) =>
@@ -256,6 +284,24 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                             `${parseDatabaseName(option.name)} ${option.emoji}`
                         )
                     }
+                    value={watch('emotions')
+                        .map(
+                            (id) =>
+                                emotionsData?.emotions.find(
+                                    (item) => item.id === id
+                                )
+                        )
+                        .filter(truthyFilter)}
+                    renderOption={(props, option) => {
+                        return (
+                            <AutocompleteOption {...props} key={option.id}>
+                                <ListItemContent>
+                                    {option.emoji}{' '}
+                                    {parseDatabaseName(option.name)}
+                                </ListItemContent>
+                            </AutocompleteOption>
+                        )
+                    }}
                     renderTags={(tags, getTagProps) =>
                         tags.map((item, index) => (
                             // eslint-disable-next-line react/jsx-key
@@ -265,7 +311,7 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                                 startDecorator={item.emoji}
                                 endDecorator={<Close fontSize="large" />}
                                 {...getTagProps({ index })}
-                                key={Number(item.id)}
+                                key={item.id}
                             >
                                 {parseDatabaseName(item.name)}
                             </Chip>
@@ -283,31 +329,42 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                     This is the story of your dream. You can describe your dream
                     including location, people, and other details.
                 </FormHelperText>
-                <Editor
-                    init={{
-                        // TODO: change the skin when dark/light mode is toggled
-                        skin: 'oxide-dark',
-                        content_css: 'dark',
-                        statusbar: false,
-                        plugins:
-                            'preview searchreplace autolink autosave visualblocks visualchars fullscreen link pagebreak nonbreaking anchor insertdatetime advlist lists wordcount quickbars emoticons',
-
-                        quickbars_insert_toolbar: false,
-                        quickbars_image_toolbar: false,
-                        a11y_advanced_options: true,
-                        toolbar:
-                            'undo redo |  blocks fontfamily fontsize forecolor | bold italic strikethrough | bullist numlist |  alignleft aligncenter alignright alignjustify | outdent indent',
+                <Skeleton
+                    sx={{
+                        height: '24rem',
                     }}
-                    onInit={(evt, editor) => (editorRef.current = editor)}
-                    apiKey={editor_api_key}
-                    onEditorChange={(e) => {
-                        setValue('story', e)
-                    }}
-                    initialValue="<p>This is the initial content of the editor</p>"
-                    {...register('story')}
-                />
+                    variant="rectangular"
+                    loading={editorRef.current === null}
+                >
+                    <Editor
+                        id="storyEditorTiny"
+                        init={{
+                            // TODO: figure out how to change the skin when dark/light mode is toggled
+                            skin: 'oxide-dark',
+                            content_css: 'dark',
+                            statusbar: false,
+                            plugins:
+                                'preview searchreplace autolink autosave visualblocks visualchars fullscreen link pagebreak nonbreaking anchor insertdatetime advlist lists wordcount quickbars emoticons',
+                            quickbars_insert_toolbar: false,
+                            quickbars_image_toolbar: false,
+                            a11y_advanced_options: true,
+                            toolbar:
+                                'undo redo |  blocks fontfamily fontsize forecolor | bold italic strikethrough | bullist numlist |  alignleft aligncenter alignright alignjustify | outdent indent',
+                        }}
+                        onInit={(evt, editor) => (editorRef.current = editor)}
+                        apiKey={editor_api_key}
+                        onEditorChange={(e) => {
+                            setValue('story', e)
+                        }}
+                        initialValue={initialEditorValue}
+                        {...register('story')}
+                    />
+                    <FieldErrorMessage
+                        error={errors.story?.message?.toString()}
+                    />
+                </Skeleton>
 
-                <FieldErrorMessage error={errors.story?.message} />
+                {/* <FieldErrorMessage error={errors.story?.message} /> */}
             </FormControl>
             <FormControl
                 sx={{
@@ -348,14 +405,9 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                         {...register('image')}
                         // onChange={(e) => {
                         //     const file = e.target.files?.[0]
-                        //     console.log('image: ', getValues('image'))
-                        //     console.log(
-                        //         'image watch: ',
-                        //         watch('image')
-                        //     )
+
                         //     // check file size less than 5mb
                         //     if (file && file.size > 5000000) {
-                        //         console.log('file size is too big')
                         //         setError('image', {
                         //             type: 'maxSize',
                         //             message:
@@ -372,7 +424,7 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                 <ImagePreview
                     src={image?.[0] && URL.createObjectURL(image[0])}
                     onRemove={() => {
-                        setValue('image', '')
+                        setValue('image', null)
                     }}
                     containerClassName={'mt-4'}
                     alt={'Front Image'}
@@ -413,12 +465,13 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                             Add
                         </Button>
                     }
+                    id="tags_input"
                     variant="outlined"
                     color="primary"
                     placeholder="Add tags..."
                     onKeyDown={(e) => {
-                        // TODO: fix so after enter is pressed, the name field is not focused
-                        if (e.key === 'Enter') {
+                        // TODO: fix so after enter is pressed, the emotion field is not reset and focused
+                        if (e.key === 'Enter' && getValues('inputTag')) {
                             addToTags(getValues('inputTag'))
                         }
                     }}
@@ -437,6 +490,7 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                             variant="solid"
                             color="primary"
                             endDecorator={<Close />}
+                            key={item}
                             onClick={() =>
                                 setValue(
                                     'tags',
@@ -486,6 +540,7 @@ export default function AddDreamForm({ tinyApiKey }: { tinyApiKey?: string }) {
                 alignItems={'center'}
                 direction={'row'}
             >
+                {/* TODO: implement reseting whole form */}
                 <Button
                     size="lg"
                     type="reset"

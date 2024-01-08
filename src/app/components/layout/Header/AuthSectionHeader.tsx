@@ -4,14 +4,21 @@ import {
     Avatar,
     Button,
     Dropdown,
+    ListDivider,
     Menu,
     MenuButton,
     MenuItem,
     Stack,
 } from '@mui/joy'
+import AccountBoxIcon from '@mui/icons-material/AccountBox'
+import LogoutIcon from '@mui/icons-material/Logout'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { signOut } from 'next-auth/react'
 import { Session } from 'next-auth'
 import * as React from 'react'
+import SettingsSystemDaydreamIcon from '@mui/icons-material/SettingsSystemDaydream'
+import Image from 'next/image'
+import clsx from 'clsx'
 
 function AuthButtons() {
     // {
@@ -56,12 +63,23 @@ function AuthButtons() {
 }
 
 function UserAvatar({ src, name }: { src?: string; name?: string }) {
+    const avatarClasses = clsx(
+        'transition-opacity hover:cursor-pointer hover:opacity-95 active:opacity-90'
+    )
+
+    if (!src) {
+        return <Avatar className={avatarClasses} src={src} />
+    }
+
     return (
-        <Avatar
-            // component={'button'}
-            className="transition-opacity hover:cursor-pointer hover:opacity-95 active:opacity-90"
-            src={src}
-        />
+        <Avatar className={avatarClasses}>
+            <Image
+                src={src}
+                alt={name || 'User Avatar'}
+                width={40}
+                height={40}
+            />
+        </Avatar>
     )
 }
 
@@ -74,16 +92,50 @@ function AvatarButton({ session }: { session: Session }) {
                     src={session.user?.image || undefined}
                 />
             </MenuButton>
-            <Menu>
-                <MenuItem href="/dashboard" component="a">
+            <Menu placement="bottom-end" size="lg">
+                <MenuItem
+                    sx={{
+                        px: 4,
+                        gap: 2,
+                    }}
+                    href="/dashboard"
+                    component="a"
+                >
+                    <AccountBoxIcon color="action" />
                     Profile
                 </MenuItem>
-                <MenuItem>Settings</MenuItem>
                 <MenuItem
+                    sx={{
+                        px: 4,
+                        gap: 2,
+                    }}
+                    href="/profile/dreams"
+                    component="a"
+                >
+                    <SettingsSystemDaydreamIcon />
+                    My Dreams
+                </MenuItem>
+
+                <MenuItem
+                    sx={{
+                        px: 4,
+                        gap: 2,
+                    }}
+                >
+                    <SettingsIcon />
+                    Settings
+                </MenuItem>
+                <ListDivider />
+                <MenuItem
+                    sx={{
+                        px: 4,
+                        gap: 2,
+                    }}
                     onClick={() => {
                         signOut()
                     }}
                 >
+                    <LogoutIcon />
                     Logout
                 </MenuItem>
             </Menu>

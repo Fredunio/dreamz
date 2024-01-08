@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
                 new PutObjectCommand({
                     Bucket: process.env.S3_BUCKET_NAME_DREAM,
                     Key: imageName,
+                    ContentType: imageFile.type,
                     // TODO: fix uploading the image
                     Body: imageBuffer,
                 })
@@ -77,8 +78,6 @@ export async function POST(request: NextRequest) {
             })
         }
     } catch (e) {
-        console.log('Error uploading dream image', e)
-
         return new Response('Something went wrong!', {
             status: 404,
         })

@@ -1,14 +1,10 @@
-'use client'
-
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail'
-import KeyIcon from '@mui/icons-material/Key'
-
 import { Stack } from '@mui/joy'
-import { useRef, useState } from 'react'
 import SignInForm from '../../components/forms/SignInForm'
 import * as React from 'react'
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
 
-export default function SignInPage() {
+export default async function SignInPage() {
     return (
         <Stack
             minHeight={`calc(100vh - var(--header-height))`}
